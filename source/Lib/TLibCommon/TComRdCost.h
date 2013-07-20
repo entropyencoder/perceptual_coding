@@ -266,6 +266,12 @@ public:
   UInt   getDistPart(Int bitDepth, Pel* piCur, Int iCurStride,  Pel* piOrg, Int iOrgStride, UInt uiBlkWidth, UInt uiBlkHeight, DFunc eDFunc = DF_SSE );
 #endif
 
+#if WEIGHTED_CHROMA_DISTORTION
+  UInt   getDistPartFreq(Int bitDepth, TCoeff* piCur, Int iCurStride,  TCoeff* piOrg, Int iOrgStride, UInt uiBlkWidth, UInt uiBlkHeight, TextType eText = TEXT_LUMA, DFunc eDFunc = DF_SSE );
+#else
+  UInt   getDistPartFreq(Int bitDepth, TCoeff* piCur, Int iCurStride,  TCoeff* piOrg, Int iOrgStride, UInt uiBlkWidth, UInt uiBlkHeight, DFunc eDFunc = DF_SSE );
+#endif
+
 #if RATE_CONTROL_LAMBDA_DOMAIN && !M0036_RC_IMPROVEMENT
   UInt   getSADPart ( Int bitDepth, Pel* pelCur, Int curStride,  Pel* pelOrg, Int orgStride, UInt width, UInt height );
 #endif

@@ -484,6 +484,47 @@ UInt TComRdCost::getDistPart(Int bitDepth, Pel* piCur, Int iCurStride,  Pel* piO
 #endif
 }
 
+// Frequency domain distortion calculation
+#if WEIGHTED_CHROMA_DISTORTION
+UInt TComRdCost::getDistPartFreq(Int bitDepth, TCoeff* piCur, Int iCurStride,  Int* piOrg, Int iOrgStride, UInt uiBlkWidth, UInt uiBlkHeight, TextType eText, DFunc eDFunc)
+#else
+UInt TComRdCost::getDistPartFreq(Int bitDepth, TCoeff* piCur, Int iCurStride,  Int* piOrg, Int iOrgStride, UInt uiBlkWidth, UInt uiBlkHeight, DFunc eDFunc )
+#endif
+{
+
+  // write code to get distortion in frequency domain
+  return 0;
+
+//  DistParam cDtParam;
+//  setDistParam( uiBlkWidth, uiBlkHeight, eDFunc, cDtParam );
+//  cDtParam.pOrg       = piOrg;
+//  cDtParam.pCur       = piCur;
+//  cDtParam.iStrideOrg = iOrgStride;
+//  cDtParam.iStrideCur = iCurStride;
+//  cDtParam.iStep      = 1;
+//
+//  cDtParam.bApplyWeight = false;
+//  cDtParam.uiComp       = 255;    // just for assert: to be sure it was set before use, since only values 0,1 or 2 are allowed.
+//  cDtParam.bitDepth = bitDepth;
+//
+//#if WEIGHTED_CHROMA_DISTORTION
+//  if (eText == TEXT_CHROMA_U)
+//  {
+//   return ((Int) (m_cbDistortionWeight * cDtParam.DistFunc( &cDtParam )));
+//  }
+//  else if (eText == TEXT_CHROMA_V)
+//  {
+//   return ((Int) (m_crDistortionWeight * cDtParam.DistFunc( &cDtParam )));
+//  }
+//  else
+//  {
+//    return cDtParam.DistFunc( &cDtParam );
+//  }
+//#else
+//  return cDtParam.DistFunc( &cDtParam );
+//#endif
+}
+
 #if RATE_CONTROL_LAMBDA_DOMAIN && !M0036_RC_IMPROVEMENT
 UInt TComRdCost::getSADPart ( Int bitDepth, Pel* pelCur, Int curStride,  Pel* pelOrg, Int orgStride, UInt width, UInt height )
 {

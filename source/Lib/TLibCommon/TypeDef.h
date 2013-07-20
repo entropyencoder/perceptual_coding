@@ -41,6 +41,8 @@
 //! \ingroup TLibCommon
 //! \{
 
+#define TEST_FREQ_DIST  1       // test frequency domain distortion calculation
+
 #define FIX1071 1 ///< fix for issue #1071
 
 #define MAX_NUM_PICS_IN_SOP           1024

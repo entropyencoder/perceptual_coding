@@ -1024,6 +1024,9 @@ TEncSearch::xIntraCodingLumaBlk( TComDataCU* pcCU,
   UInt    uiQTLayer         = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize() - uiLog2TrSize;
   UInt    uiNumCoeffPerInc  = pcCU->getSlice()->getSPS()->getMaxCUWidth() * pcCU->getSlice()->getSPS()->getMaxCUHeight() >> ( pcCU->getSlice()->getSPS()->getMaxCUDepth() << 1 );
   TCoeff* pcCoeff           = m_ppcQTTempCoeffY[ uiQTLayer ] + uiNumCoeffPerInc * uiAbsPartIdx;
+#if TEST_FREQ_DIST
+  TCoeff* pcCoeffBeforeQ    = new TCoeff[uiWidth*uiHeight];
+#endif
 #if ADAPTIVE_QP_SELECTION
   Int*    pcArlCoeff        = m_ppcQTTempArlCoeffY[ uiQTLayer ] + uiNumCoeffPerInc * uiAbsPartIdx;
 #endif
@@ -1158,7 +1161,25 @@ TEncSearch::xIntraCodingLumaBlk( TComDataCU* pcCU,
   }
   
   //===== update distortion =====
+#if !TEST_FREQ_DIST
   ruiDist += m_pcRdCost->getDistPart(g_bitDepthY, piReco, uiStride, piOrg, uiStride, uiWidth, uiHeight );
+
+#else // TEST_FREQ_DIST==1
+  // pcCoeffBeforeQ : transformed coefficients, m_pcTrQuant->m_plTempCoeff 넣어주어야함
+  // pcCoeff : quantized cofficients
+  // ruiDist 에 누적
+
+  // pcCoeffBeforeQ = ...
+  
+  ruiDist += m_pcRdCost->getDistPartFreq(g_bitDepthY, pcCoeff, uiStride, pcCoeffBeforeQ, uiStride, uiWidth, uiHeight );;
+
+  printf("- xIntraCodingLumaBlk()\n");
+  printf("-- spatial domain dist   : %d\n", m_pcRdCost->getDistPart(g_bitDepthY, piReco, uiStride, piOrg, uiStride, uiWidth, uiHeight ));
+  printf("-- frequency domain dist : %d\n", ruiDist);
+
+
+#endif
+
 }
 
 Void
