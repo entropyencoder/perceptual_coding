@@ -132,6 +132,10 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   TComSlice*  pcSlice = rpcPic->getSlice(rpcPic->getCurrSliceIdx());
   Int  iNumSubstreams = pcSlice->getPPS()->getNumSubstreams();
 
+#ifdef EN_TEST_TILE
+  printf("uiTilesAcross: %d\n", uiTilesAcross);
+  printf("iNumSubstreams: %d\n", iNumSubstreams);
+#endif
   // delete decoders if already allocated in previous slice
   if (m_pcBufferSbacDecoders)
   {
@@ -185,6 +189,9 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   Int iNumSubstreamsPerTile = 1; // if independent.
   Bool depSliceSegmentsEnabled = rpcPic->getSlice(rpcPic->getCurrSliceIdx())->getPPS()->getDependentSliceSegmentsEnabledFlag();
   uiTileStartLCU = rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iStartCUAddr))->getFirstCUAddr();
+#ifdef EN_TEST_TILE
+  printf(" uiTileStartLCU: %d\n", uiTileStartLCU);
+#endif
   if( depSliceSegmentsEnabled )
   {
     if( (!rpcPic->getSlice(rpcPic->getCurrSliceIdx())->isNextSlice()) &&
@@ -216,6 +223,11 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       CTXMem[0]->loadContexts(pcSbacDecoder);
     }
   }
+#ifdef EN_TEST_TILE
+  printf("\n* Start of CU-level decoding loop\n\n");
+  printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
+  printf(" rpcPic->getPicSym()->getNumTiles(): %d\n", rpcPic->getPicSym()->getNumTiles());
+#endif
   for( Int iCUAddr = iStartCUAddr; !uiIsLast && iCUAddr < rpcPic->getNumCUsInFrame(); iCUAddr = rpcPic->getPicSym()->xCalculateNxtCUAddr(iCUAddr) )
   {
     pcCU = rpcPic->getCU( iCUAddr );
@@ -359,6 +371,9 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
         }
       }
     }
+#ifdef EN_TEST_TILE
+    printf(" iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
+#endif
     m_pcCuDecoder->decodeCU     ( pcCU, uiIsLast );
     m_pcCuDecoder->decompressCU ( pcCU );
     
