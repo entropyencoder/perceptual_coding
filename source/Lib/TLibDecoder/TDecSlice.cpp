@@ -372,7 +372,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       }
     }
 #ifdef EN_TEST_TILE
-    printf(" iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
+    printf(" uiTileStartLCU: %d, iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", uiTileStartLCU, iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
 #endif
     m_pcCuDecoder->decodeCU     ( pcCU, uiIsLast );
     m_pcCuDecoder->decompressCU ( pcCU );
