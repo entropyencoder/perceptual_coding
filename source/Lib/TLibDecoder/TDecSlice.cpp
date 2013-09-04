@@ -231,11 +231,10 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 #ifdef EN_TEST_TILE
   struct timeval cur_time;
   gettimeofday(&cur_time, NULL);
-  printf("\n* CU-level decoding loop starts. clock()=%f, gettimeofday()=%f\n", 
-                  (Double)(clock()),
+  printf("\n* CU-level decoding loop starts. gettimeofday()=%f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
-  printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
-  printf(" rpcPic->getPicSym()->getNumTiles(): %d\n\n", rpcPic->getPicSym()->getNumTiles());
+  //printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
+  //printf(" rpcPic->getPicSym()->getNumTiles(): %d\n\n", rpcPic->getPicSym()->getNumTiles());
 #endif
 #ifdef EN_TEST_TILE
   UInt uiPrevTileIdx = rpcPic->getPicSym()->getNumTiles();
@@ -247,9 +246,8 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
     if(uiPrevTileIdx!=rpcPic->getPicSym()->getTileIdxMap(iCUAddr))
     {
       gettimeofday(&cur_time, NULL);
-      printf("> TileIdx(%2d) decoding starts. clock()=%f, gettimeofday()=%f\n", 
+      printf("> TileIdx(%2d) decoding starts.   gettimeofday()=%f\n", 
                       uiPrevTileIdx = rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
-                      (Double)(clock()), 
                       (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
       //m_dDecTime += (Double)(clock()-iBeforeTime) / CLOCKS_PER_SEC;
     }
@@ -433,8 +431,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   }
 #ifdef EN_TEST_TILE
   gettimeofday(&cur_time, NULL);
-  printf("\n* CU-level decoding loop ends. clock()=%f, gettimeofday()=%f\n", 
-                  (Double)(clock()),
+  printf("* CU-level decoding loop ends.   gettimeofday()=%f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
 #endif
 }
