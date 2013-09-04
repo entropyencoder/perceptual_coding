@@ -124,9 +124,9 @@ Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic*& rpcPic)
   m_pcEntropyDecoder->setEntropyDecoder (m_pcSbacDecoder);
 
   UInt uiNumSubstreams = pcSlice->getPPS()->getEntropyCodingSyncEnabledFlag() ? pcSlice->getNumEntryPointOffsets()+1 : pcSlice->getPPS()->getNumSubstreams();
-#ifdef EN_TEST_TILE
-  printf("uiNumSubstreams: %d\n", uiNumSubstreams);
-#endif
+//#ifdef EN_TEST_TILE
+//  printf("uiNumSubstreams: %d\n", uiNumSubstreams);
+//#endif
   // init each couple {EntropyDecoder, Substream}
   UInt *puiSubstreamSizes = pcSlice->getSubstreamSizes();
   ppcSubstreams    = new TComInputBitstream*[uiNumSubstreams];
@@ -154,6 +154,9 @@ Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic*& rpcPic)
     m_LFCrossSliceBoundaryFlag.push_back( pcSlice->getLFCrossSliceBoundaryFlag());
   }
   m_pcSbacDecoders[0].load(m_pcSbacDecoder);
+#ifdef EN_TEST_TILE
+  // ... call TDecSlice::decompressSlice() ...
+#endif  
   m_pcSliceDecoder->decompressSlice( ppcSubstreams, rpcPic, m_pcSbacDecoder, m_pcSbacDecoders);
   m_pcEntropyDecoder->setBitstream(  ppcSubstreams[uiNumSubstreams-1] );
   // deallocate all created substreams, including internal buffers.

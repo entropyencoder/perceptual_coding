@@ -37,6 +37,11 @@
 
 #include "TDecSlice.h"
 
+#ifdef EN_TEST_TILE
+#include <time.h>
+#include <sys/time.h>
+#endif
+
 //! \ingroup TLibDecoder
 //! \{
 
@@ -132,10 +137,10 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   TComSlice*  pcSlice = rpcPic->getSlice(rpcPic->getCurrSliceIdx());
   Int  iNumSubstreams = pcSlice->getPPS()->getNumSubstreams();
 
-#ifdef EN_TEST_TILE
-  printf("uiTilesAcross: %d\n", uiTilesAcross);
-  printf("iNumSubstreams: %d\n", iNumSubstreams);
-#endif
+//#ifdef EN_TEST_TILE
+//  printf("uiTilesAcross: %d\n", uiTilesAcross);
+//  printf("iNumSubstreams: %d\n", iNumSubstreams);
+//#endif
   // delete decoders if already allocated in previous slice
   if (m_pcBufferSbacDecoders)
   {
@@ -189,9 +194,9 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   Int iNumSubstreamsPerTile = 1; // if independent.
   Bool depSliceSegmentsEnabled = rpcPic->getSlice(rpcPic->getCurrSliceIdx())->getPPS()->getDependentSliceSegmentsEnabledFlag();
   uiTileStartLCU = rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iStartCUAddr))->getFirstCUAddr();
-#ifdef EN_TEST_TILE
-  printf(" uiTileStartLCU: %d\n", uiTileStartLCU);
-#endif
+//#ifdef EN_TEST_TILE
+//  printf(" uiTileStartLCU: %d\n", uiTileStartLCU);
+//#endif
   if( depSliceSegmentsEnabled )
   {
     if( (!rpcPic->getSlice(rpcPic->getCurrSliceIdx())->isNextSlice()) &&
@@ -224,12 +229,31 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
     }
   }
 #ifdef EN_TEST_TILE
-  printf("\n* Start of CU-level decoding loop\n\n");
+  struct timeval cur_time;
+  gettimeofday(&cur_time, NULL);
+  printf("\n* CU-level decoding loop starts. clock()=%f, gettimeofday()=%f\n", 
+                  (Double)(clock()),
+                  (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
   printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
-  printf(" rpcPic->getPicSym()->getNumTiles(): %d\n", rpcPic->getPicSym()->getNumTiles());
+  printf(" rpcPic->getPicSym()->getNumTiles(): %d\n\n", rpcPic->getPicSym()->getNumTiles());
+#endif
+#ifdef EN_TEST_TILE
+  UInt uiPrevTileIdx = rpcPic->getPicSym()->getNumTiles();
 #endif
   for( Int iCUAddr = iStartCUAddr; !uiIsLast && iCUAddr < rpcPic->getNumCUsInFrame(); iCUAddr = rpcPic->getPicSym()->xCalculateNxtCUAddr(iCUAddr) )
   {
+    
+#ifdef EN_TEST_TILE
+    if(uiPrevTileIdx!=rpcPic->getPicSym()->getTileIdxMap(iCUAddr))
+    {
+      gettimeofday(&cur_time, NULL);
+      printf("> TileIdx(%2d) decoding starts. clock()=%f, gettimeofday()=%f\n", 
+                      uiPrevTileIdx = rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
+                      (Double)(clock()), 
+                      (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
+      //m_dDecTime += (Double)(clock()-iBeforeTime) / CLOCKS_PER_SEC;
+    }
+#endif
     pcCU = rpcPic->getCU( iCUAddr );
     pcCU->initCU( rpcPic, iCUAddr );
     uiTileCol = rpcPic->getPicSym()->getTileIdxMap(iCUAddr) % (rpcPic->getPicSym()->getNumColumnsMinus1()+1); // what column of tiles are we in?
@@ -371,9 +395,9 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
         }
       }
     }
-#ifdef EN_TEST_TILE
-    printf(" uiTileStartLCU: %d, iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", uiTileStartLCU, iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
-#endif
+//#ifdef EN_TEST_TILE
+//    printf(" uiTileStartLCU: %d, iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", uiTileStartLCU, iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
+//#endif
     m_pcCuDecoder->decodeCU     ( pcCU, uiIsLast );
     m_pcCuDecoder->decompressCU ( pcCU );
     
@@ -407,6 +431,12 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       return;
     }
   }
+#ifdef EN_TEST_TILE
+  gettimeofday(&cur_time, NULL);
+  printf("\n* CU-level decoding loop ends. clock()=%f, gettimeofday()=%f\n", 
+                  (Double)(clock()),
+                  (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
+#endif
 }
 
 ParameterSetManagerDecoder::ParameterSetManagerDecoder()
