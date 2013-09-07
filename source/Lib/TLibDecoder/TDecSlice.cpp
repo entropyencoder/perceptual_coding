@@ -231,7 +231,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 #ifdef EN_TEST_TILE
   struct timeval cur_time, prev_time;
   gettimeofday(&cur_time, NULL); 
-  printf("\n* CU-level decoding loop starts. cur_time=%f\n", 
+  printf("\n* CU-level decoding loop starts. cur_time: %f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
   prev_time = cur_time;
   //printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
@@ -244,16 +244,20 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   {
     
 #ifdef EN_TEST_TILE
-    if(uiPrevTileIdx!=rpcPic->getPicSym()->getTileIdxMap(iCUAddr))
+    //if(uiPrevTileIdx!=rpcPic->getPicSym()->getTileIdxMap(iCUAddr))
+    if(iCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getFirstCUAddr())
     {
       gettimeofday(&cur_time, NULL);
-      printf("> TileIdx(%2d) decoding starts.   cur_time=%f, diff_time=%f\n", 
+      printf("> TileIdx(%2d) decoding starts.   cur_time: %f, diff_time: %f\n", 
                       uiPrevTileIdx = rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
                       (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
       prev_time = cur_time;
       //m_dDecTime += (Double)(clock()-iBeforeTime) / CLOCKS_PER_SEC;
     }
+#endif
+#ifdef EN_TEST_TILE_LCU
+    gettimeofday(&prev_time, NULL); // Measure start time of current LCU decoding
 #endif
     pcCU = rpcPic->getCU( iCUAddr );
     pcCU->initCU( rpcPic, iCUAddr );
@@ -399,14 +403,14 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 //#ifdef EN_TEST_TILE
 //    printf(" uiTileStartLCU: %d, iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", uiTileStartLCU, iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
 //#endif
-#ifdef EN_TEST_TILE_LCU
-    gettimeofday(&cur_time, NULL);
-    printf("> CU #%04d decoding starts.   cur_time=%f, diff_time=%f\n", 
-                    iCUAddr,
-                    (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
-                    ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
-    prev_time = cur_time;
-#endif
+//#ifdef EN_TEST_TILE_LCU
+//    gettimeofday(&cur_time, NULL);
+//    printf("> CU #%04d decoding starts.   cur_time: %f, diff_time: %f\n", 
+//                    iCUAddr,
+//                    (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
+//                    ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
+//    prev_time = cur_time;
+//#endif
     m_pcCuDecoder->decodeCU     ( pcCU, uiIsLast );
     m_pcCuDecoder->decompressCU ( pcCU );
     
@@ -439,10 +443,21 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       CTXMem[0]->loadContexts( pcSbacDecoder );//ctx end of dep.slice
       return;
     }
+#ifdef EN_TEST_TILE_LCU
+    gettimeofday(&cur_time, NULL);
+    //printf("> CU #%04d decoding elapsed time (sec): %f\n", 
+    //                iCUAddr,
+    //                ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
+    printf("%f, ", 
+      ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
+    prev_time = cur_time;
+    if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getRightEdgePosInCU())
+      printf("\n");
+#endif
   }
 #ifdef EN_TEST_TILE
   gettimeofday(&cur_time, NULL);
-  printf("* CU-level decoding loop ends.   cur_time=%f, diff_time=%f\n", 
+  printf("* CU-level decoding loop ends.   cur_time: %f, diff_time: %f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;
