@@ -815,22 +815,24 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     }
     else
     {
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_ENC
       // Test changing number of tile partitions
       // ...
 
       // Test changing tile column's width 
       UInt* uiColumnWidth = new UInt[pcPic->getPicSym()->getNumColumnsMinus1()];
       //UInt* uiRowHeight = new UInt[pcPic->getPicSym()->getNumRowsMinus1()];
-
+      
+      printf("> Tile column width changed! ");
       for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
       {
-        printf("> Tile column width changed!\n");
         uiColumnWidth[j] = min(pcSlice->getPPS()->getColumnWidth(j) + 1,  pcPic->getPicSym()->getFrameWidthInCU()-1);
+        printf("%d ", uiColumnWidth[j]);
       }
+      printf("\n");
       pcSlice->getPPS()->setColumnWidth(uiColumnWidth);
 
-      // Test changing tile column's width 
+      // Test changing tile row's height
       // ...
       
 #endif
@@ -1040,6 +1042,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       nalu = NALUnit(NAL_UNIT_PPS);
       m_pcEntropyCoder->setBitstream(&nalu.m_Bitstream);
       m_pcEntropyCoder->encodePPS(pcSlice->getPPS());
+#ifdef EN_TEST_TILE_ENC
+      printf("> encodePPS() is called!\n");
+#endif
       writeRBSPTrailingBits(nalu.m_Bitstream);
       accessUnit.push_back(new NALUnitEBSP(nalu));
 #if RATE_CONTROL_LAMBDA_DOMAIN
@@ -1050,6 +1055,22 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
       m_bSeqFirst = false;
     }
+#ifdef EN_TEST_TILE_ENC
+    if ( !m_bSeqFirst )
+    {
+      OutputNALUnit nalu(NAL_UNIT_PPS);
+      
+      nalu = NALUnit(NAL_UNIT_PPS);
+      m_pcEntropyCoder->setBitstream(&nalu.m_Bitstream);
+      m_pcEntropyCoder->encodePPS(pcSlice->getPPS());
+      printf("> encodePPS() is called!\n");
+      writeRBSPTrailingBits(nalu.m_Bitstream);
+      accessUnit.push_back(new NALUnitEBSP(nalu));
+#if RATE_CONTROL_LAMBDA_DOMAIN
+      actualTotalBits += UInt(accessUnit.back()->m_nalUnitData.str().size()) * 8;
+#endif
+    }
+#endif
 
     if (writeSOP) // write SOP description SEI (if enabled) at the beginning of GOP
     {
