@@ -815,6 +815,25 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     }
     else
     {
+#ifdef EN_TEST_TILE
+      // Test changing number of tile partitions
+      // ...
+
+      // Test changing tile column's width 
+      UInt* uiColumnWidth = new UInt[pcPic->getPicSym()->getNumColumnsMinus1()];
+      //UInt* uiRowHeight = new UInt[pcPic->getPicSym()->getNumRowsMinus1()];
+
+      for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
+      {
+        printf("> Tile column width changed!\n");
+        uiColumnWidth[j] = min(pcSlice->getPPS()->getColumnWidth(j) + 1,  pcPic->getPicSym()->getFrameWidthInCU()-1);
+      }
+      pcSlice->getPPS()->setColumnWidth(uiColumnWidth);
+
+      // Test changing tile column's width 
+      // ...
+      
+#endif
       //set the width for each tile
       for(j=0; j < pcPic->getPicSym()->getNumRowsMinus1()+1; j++)
       {
