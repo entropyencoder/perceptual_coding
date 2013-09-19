@@ -354,6 +354,46 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   Int picSptDpbOutputDuDelay = 0;
   UInt *accumBitsDU = NULL;
   UInt *accumNalsDU = NULL;
+
+#ifdef EN_TEST_TILE_ENC 
+  // ** Tile partitioning-related syntaxes in HEVC **
+  //
+  // num_tile_columns_minus1
+  // num_tile_rows_minus1
+  // uniform_spacing_flag
+  // if( !uniform_spacing_flag ) {
+  //   for( i = 0; i < num_tile_columns_minus1; i++ )
+  //     column_width_minus1[ i ]
+  //   for( i = 0; i < num_tile_rows_minus1; i++ )
+  //     row_height_minus1[ i ]
+  // }
+
+  // ** Custom GOP-level tile config file **
+  // NOTE: The sequence's first frame (i.e. m_bSeqFirst) tile is configured by HM cfg file, not the custom one.
+  // NOTE: Only partitions' width and height can be adjusted. The geometry is set by HM cfg file.
+  //
+  // [change the previous setting] (1: change, i.e. another PPS is inserted for this picture.)
+  // [uniform_spacing_flag] (exist only if [change the previous setting] is '1')
+  // [col width #0] ... [col width #(num_tile_columns_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
+  // [row height #0]  ...  [row height #(num_tile_rows_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
+
+  FILE* fpTileGopCfg;
+  bool  bTileCfgChanged = false;
+  bool  bTileUniformSpacing = false;
+  unsigned int* uiColWidth = NULL;
+  unsigned int* uiRowHeight = NULL;
+
+  if((fpTileGopCfg = fopen("tile_gop_cfg.txt", "r"))==NULL)
+  {
+    printf("> No custom tile cfg file is found.\n");
+  }
+  //fpTileGopCfg = NULL;
+#endif
+
+//#ifdef EN_TEST_TILE_ENC
+//  printf("> m_iGopSize: %d\n", m_iGopSize);
+//#endif
+
   SEIDecodingUnitInfo decodingUnitInfoSEI;
   for ( Int iGOPid=0; iGOPid < m_iGopSize; iGOPid++ )
   {
@@ -789,6 +829,25 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     //create the TComTileArray
     pcPic->getPicSym()->xCreateTComTileArray();
 
+#ifdef EN_TEST_TILE_ENC
+    if ((!m_bSeqFirst) && (fpTileGopCfg!=NULL))
+    {
+      int tmp=0;
+      if(!fscanf(fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
+      bTileCfgChanged = (tmp==1) ? true : false;
+    }
+    if (bTileCfgChanged)
+    {
+      int tmp;
+      printf("> Tile cfg changed! ");
+      uiColWidth  = new unsigned int[pcSlice->getPPS()->getNumColumnsMinus1()];
+      uiRowHeight = new unsigned int[pcSlice->getPPS()->getNumRowsMinus1()   ];
+      if(!fscanf(fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
+      bTileUniformSpacing = (tmp==1) ? true : false;
+      pcSlice->getPPS()->setUniformSpacingFlag(bTileUniformSpacing); 
+    }
+#endif  
+
     if( pcSlice->getPPS()->getUniformSpacingFlag() == 1 )
     {
       //set the width for each tile
@@ -816,25 +875,41 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     else
     {
 #ifdef EN_TEST_TILE_ENC
-      // Test changing number of tile partitions
-      // ...
+      //// Test changing number of tile partitions
+      //// ...
 
-      // Test changing tile column's width 
-      UInt* uiColumnWidth = new UInt[pcPic->getPicSym()->getNumColumnsMinus1()];
-      //UInt* uiRowHeight = new UInt[pcPic->getPicSym()->getNumRowsMinus1()];
+      //// Test changing tile column's width 
+      //UInt* uiColumnWidth = new UInt[pcPic->getPicSym()->getNumColumnsMinus1()];
+      ////UInt* uiRowHeight = new UInt[pcPic->getPicSym()->getNumRowsMinus1()];
+      //
+      //printf("> Tile column width changed! ");
+      //for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
+      //{
+      //  uiColumnWidth[j] = min(pcSlice->getPPS()->getColumnWidth(j) + 1,  pcPic->getPicSym()->getFrameWidthInCU()-1);
+      //  printf("%d ", uiColumnWidth[j]);
+      //}
+      //printf("\n");
+      //pcSlice->getPPS()->setColumnWidth(uiColumnWidth);
+
+      //// Test changing tile row's height
+      //// ...
       
-      printf("> Tile column width changed! ");
-      for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
+      if (bTileCfgChanged && !bTileUniformSpacing)
       {
-        uiColumnWidth[j] = min(pcSlice->getPPS()->getColumnWidth(j) + 1,  pcPic->getPicSym()->getFrameWidthInCU()-1);
-        printf("%d ", uiColumnWidth[j]);
-      }
-      printf("\n");
-      pcSlice->getPPS()->setColumnWidth(uiColumnWidth);
+        for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
+        {
+          //fscanf(fpTileGopCfg, "%d", &uiColWidth[j]);
+          if(!fscanf(fpTileGopCfg, "%d", &uiColWidth[j])) printf("Custom tile GOP cfg read error!");   
+        }
+        pcSlice->getPPS()->setColumnWidth(uiColWidth);
 
-      // Test changing tile row's height
-      // ...
-      
+        for(j=0; j < pcPic->getPicSym()->getNumRowsMinus1(); j++)
+        {
+          //fscanf(fpTileGopCfg, "%d", &uiRowHeight[j]);
+          if(!fscanf(fpTileGopCfg, "%d", &uiRowHeight[j])) printf("Custom tile GOP cfg read error!");   
+        }
+        pcSlice->getPPS()->setRowHeight(uiRowHeight);
+      }
 #endif
       //set the width for each tile
       for(j=0; j < pcPic->getPicSym()->getNumRowsMinus1()+1; j++)
@@ -1056,7 +1131,8 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       m_bSeqFirst = false;
     }
 #ifdef EN_TEST_TILE_ENC
-    if ( !m_bSeqFirst )
+    //if ( !m_bSeqFirst )
+    if (bTileCfgChanged)
     {
       OutputNALUnit nalu(NAL_UNIT_PPS);
       
@@ -1066,6 +1142,8 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       printf("> encodePPS() is called!\n");
       writeRBSPTrailingBits(nalu.m_Bitstream);
       accessUnit.push_back(new NALUnitEBSP(nalu));
+      delete [] uiColWidth ;
+      delete [] uiRowHeight;
 #if RATE_CONTROL_LAMBDA_DOMAIN
       actualTotalBits += UInt(accessUnit.back()->m_nalUnitData.str().size()) * 8;
 #endif

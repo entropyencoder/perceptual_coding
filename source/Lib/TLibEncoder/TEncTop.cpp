@@ -370,6 +370,10 @@ Void TEncTop::encode(Bool flush, TComPicYuv* pcPicYuvOrg, TComList<TComPicYuv*>&
   }
 #endif
 
+//#ifdef EN_TEST_TILE_ENC
+//  printf("> m_iGOPSize: %d\n", m_iGOPSize);
+//#endif
+
   // compress GOP
   m_cGOPEncoder.compressGOP(m_iPOCLast, m_iNumPicRcvd, m_cListPic, rcListPicYuvRecOut, accessUnitsOut);
 
