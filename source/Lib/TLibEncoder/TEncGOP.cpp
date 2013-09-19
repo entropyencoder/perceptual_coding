@@ -377,17 +377,19 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   // [col width #0] ... [col width #(num_tile_columns_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
   // [row height #0]  ...  [row height #(num_tile_rows_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
 
-  FILE* fpTileGopCfg;
+  FILE* fpTileGopCfg = NULL;
   bool  bTileCfgChanged = false;
   bool  bTileUniformSpacing = false;
   unsigned int* uiColWidth = NULL;
   unsigned int* uiRowHeight = NULL;
 
-  if((fpTileGopCfg = fopen("tile_gop_cfg.txt", "r"))==NULL)
+  if(!m_bSeqFirst)
   {
-    printf("> No custom tile cfg file is found.\n");
+    if((fpTileGopCfg = fopen("tile_gop_cfg.txt", "r"))==NULL)
+    {
+      printf("> No custom tile cfg file is found.\n");
+    }
   }
-  //fpTileGopCfg = NULL;
 #endif
 
 //#ifdef EN_TEST_TILE_ENC
@@ -1963,6 +1965,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
       delete[] pcSubstreamsOut;
   }
+#ifdef EN_TEST_TILE_ENC
+  if(fpTileGopCfg!=NULL)
+  {
+    fclose(fpTileGopCfg);
+  }
+#endif
 #if !RATE_CONTROL_LAMBDA_DOMAIN
   if(m_pcCfg->getUseRateCtrl())
   {
