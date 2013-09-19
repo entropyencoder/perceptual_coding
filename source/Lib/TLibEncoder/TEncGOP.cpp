@@ -376,6 +376,16 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   // [uniform_spacing_flag] (exist only if [change the previous setting] is '1')
   // [col width #0] ... [col width #(num_tile_columns_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
   // [row height #0]  ...  [row height #(num_tile_rows_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
+  // 
+  // One example where GOP size is 8.
+  // 0       (Keep config in DOC #0)
+  // 1 0 4 2 (Change w/ non-uniform tiles of which the first is 4-LCU-wide and 2-LCU-high in DOC #1)
+  // 0
+  // 1 1     (Change w/ uniform tiles in DOC #3) 
+  // 0
+  // 1 0 3 3
+  // 1 1
+  // 0
 
   FILE* fpTileGopCfg = NULL;
   bool  bTileCfgChanged = false;
