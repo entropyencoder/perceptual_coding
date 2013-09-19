@@ -887,25 +887,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     else
     {
 #ifdef EN_TEST_TILE_ENC
-      //// Test changing number of tile partitions
-      //// ...
-
-      //// Test changing tile column's width 
-      //UInt* uiColumnWidth = new UInt[pcPic->getPicSym()->getNumColumnsMinus1()];
-      ////UInt* uiRowHeight = new UInt[pcPic->getPicSym()->getNumRowsMinus1()];
-      //
-      //printf("> Tile column width changed! ");
-      //for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
-      //{
-      //  uiColumnWidth[j] = min(pcSlice->getPPS()->getColumnWidth(j) + 1,  pcPic->getPicSym()->getFrameWidthInCU()-1);
-      //  printf("%d ", uiColumnWidth[j]);
-      //}
-      //printf("\n");
-      //pcSlice->getPPS()->setColumnWidth(uiColumnWidth);
-
-      //// Test changing tile row's height
-      //// ...
-      
       if (bTileCfgChanged && !bTileUniformSpacing)
       {
         for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
