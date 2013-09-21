@@ -993,7 +993,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 #endif
     }
 #endif
-#ifdef EN_TEST_TILE_ENC_LCU
+#ifdef EN_TEST_TILE_LCU_ENC
 #ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU encoding
 #endif
@@ -1293,7 +1293,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
       m_pcRateCtrl->updataRCUnitStatus();
     }
 #endif
-#ifdef EN_TEST_TILE_ENC_LCU
+#ifdef EN_TEST_TILE_LCU_ENC
 #ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     printf("%f, ", 
