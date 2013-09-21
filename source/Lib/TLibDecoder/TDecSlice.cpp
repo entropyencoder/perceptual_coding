@@ -241,20 +241,16 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   //printf(" rpcPic->getPicSym()->getNumTiles(): %d\n\n", rpcPic->getPicSym()->getNumTiles());
 #endif
 #endif
-#ifdef EN_TEST_TILE
-  UInt uiPrevTileIdx = rpcPic->getPicSym()->getNumTiles();
-#endif
   for( Int iCUAddr = iStartCUAddr; !uiIsLast && iCUAddr < rpcPic->getNumCUsInFrame(); iCUAddr = rpcPic->getPicSym()->xCalculateNxtCUAddr(iCUAddr) )
   {
     
 #ifdef EN_TEST_TILE
-    //if(uiPrevTileIdx!=rpcPic->getPicSym()->getTileIdxMap(iCUAddr))
     if(iCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getFirstCUAddr())
     {
 #ifndef _MSC_VER
       gettimeofday(&cur_time, NULL);
       printf("> TileIdx(%2d) decoding starts.   cur_time: %f, diff_time: %f\n", 
-                      uiPrevTileIdx = rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
+                      rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
                       (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
       prev_time = cur_time;
