@@ -979,7 +979,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 //#ifdef EN_TEST_TILE_ENC
 //    printf("uiCUAddr: %d, TileIdx: %d\n", uiCUAddr, rpcPic->getPicSym()->getTileIdxMap(uiCUAddr));
 //#endif
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_ENC
     if(uiCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getFirstCUAddr())
     {
 #ifndef _MSC_VER
@@ -993,7 +993,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 #endif
     }
 #endif
-#ifdef EN_TEST_TILE_LCU
+#ifdef EN_TEST_TILE_ENC_LCU
 #ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU encoding
 #endif
@@ -1293,7 +1293,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
       m_pcRateCtrl->updataRCUnitStatus();
     }
 #endif
-#ifdef EN_TEST_TILE_LCU
+#ifdef EN_TEST_TILE_ENC_LCU
 #ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     printf("%f, ", 
@@ -1323,7 +1323,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     m_pcRateCtrl->updateFrameData(m_uiPicTotalBits);
   }
 #endif
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_ENC
 #ifndef _MSC_VER
   gettimeofday(&cur_time, NULL);
   printf("* CU-level encoding loop ends.   cur_time: %f, diff_time: %f\n", 
