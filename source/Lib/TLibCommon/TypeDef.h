@@ -41,6 +41,13 @@
 //! \ingroup TLibCommon
 //! \{
 
+// yschoi addded
+#define EN_TEST_TILE
+#define EN_TEST_TILE_LCU
+#define EN_TEST_TILE_ENC
+#define EN_TEST_TILE_LCU_ENC
+
+
 #define FIX1071 1 ///< fix for issue #1071
 
 #define MAX_NUM_PICS_IN_SOP           1024
