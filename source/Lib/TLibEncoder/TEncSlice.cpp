@@ -968,6 +968,8 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
   printf("\n* CU-level encoding loop starts. cur_time: %f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
   prev_time = cur_time;
+  
+  UInt64  m_uiPrevPicTotalBits = 0;
 #endif
 #endif
   // for every CU in slice
@@ -1299,6 +1301,9 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     printf("%f, ", 
       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     prev_time = cur_time;
+    printf("%llu, ", m_uiPicTotalBits - m_uiPrevPicTotalBits);
+    //cout<<m_uiPicTotalBits<<", ";
+    m_uiPrevPicTotalBits = m_uiPicTotalBits;
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getRightEdgePosInCU())
       printf("\n");
 #endif
