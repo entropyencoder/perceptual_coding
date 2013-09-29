@@ -1671,12 +1671,13 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
 #ifdef EN_TEST_TILE_LCU_ENC
 #ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
-    printf("%6f / ", 
+    printf("%6f , ", 
       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     prev_time = cur_time;
+#endif
+    printf("%5u / ", pcCU->getTotalBits());
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getRightEdgePosInCU())
       printf("\n");
-#endif
 #endif
   }
   if( depSliceSegmentsEnabled )

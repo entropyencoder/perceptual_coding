@@ -387,7 +387,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   // 1 1
   // 0
 
-  FILE* fpTileGopCfg = NULL;
+  //FILE* g_fpTileGopCfg = NULL;
   bool  bTileCfgChanged = false;
   bool  bTileUniformSpacing = false;
   unsigned int* uiColWidth = NULL;
@@ -395,7 +395,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
   if(!m_bSeqFirst)
   {
-    if((fpTileGopCfg = fopen("tile_gop_cfg.txt", "r"))==NULL)
+    if((g_fpTileGopCfg = fopen("tile_gop_cfg.txt", "r"))==NULL)
     {
       printf("> No custom tile cfg file is found.\n");
     }
@@ -842,10 +842,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->getPicSym()->xCreateTComTileArray();
 
 #ifdef EN_TEST_TILE_ENC
-    if ((!m_bSeqFirst) && (fpTileGopCfg!=NULL))
+    if ((!m_bSeqFirst) && (g_fpTileGopCfg!=NULL))
     {
       int tmp=0;
-      if(!fscanf(fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
+      if(!fscanf(g_fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
       bTileCfgChanged = (tmp==1) ? true : false;
     }
     if (bTileCfgChanged)
@@ -854,7 +854,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       printf("> Tile cfg changed! ");
       uiColWidth  = new unsigned int[pcSlice->getPPS()->getNumColumnsMinus1()];
       uiRowHeight = new unsigned int[pcSlice->getPPS()->getNumRowsMinus1()   ];
-      if(!fscanf(fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
+      if(!fscanf(g_fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
       bTileUniformSpacing = (tmp==1) ? true : false;
       pcSlice->getPPS()->setUniformSpacingFlag(bTileUniformSpacing); 
     }
@@ -891,15 +891,15 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       {
         for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
         {
-          //fscanf(fpTileGopCfg, "%d", &uiColWidth[j]);
-          if(!fscanf(fpTileGopCfg, "%d", &uiColWidth[j])) printf("Custom tile GOP cfg read error!");   
+          //fscanf(g_fpTileGopCfg, "%d", &uiColWidth[j]);
+          if(!fscanf(g_fpTileGopCfg, "%d", &uiColWidth[j])) printf("Custom tile GOP cfg read error!");   
         }
         pcSlice->getPPS()->setColumnWidth(uiColWidth);
 
         for(j=0; j < pcPic->getPicSym()->getNumRowsMinus1(); j++)
         {
-          //fscanf(fpTileGopCfg, "%d", &uiRowHeight[j]);
-          if(!fscanf(fpTileGopCfg, "%d", &uiRowHeight[j])) printf("Custom tile GOP cfg read error!");   
+          //fscanf(g_fpTileGopCfg, "%d", &uiRowHeight[j]);
+          if(!fscanf(g_fpTileGopCfg, "%d", &uiRowHeight[j])) printf("Custom tile GOP cfg read error!");   
         }
         pcSlice->getPPS()->setRowHeight(uiRowHeight);
       }
@@ -1957,9 +1957,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       delete[] pcSubstreamsOut;
   }
 #ifdef EN_TEST_TILE_ENC
-  if(fpTileGopCfg!=NULL)
+  if(g_fpTileGopCfg!=NULL)
   {
-    fclose(fpTileGopCfg);
+    fclose(g_fpTileGopCfg);
   }
 #endif
 #if !RATE_CONTROL_LAMBDA_DOMAIN
