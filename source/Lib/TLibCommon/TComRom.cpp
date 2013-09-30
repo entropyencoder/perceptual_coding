@@ -48,8 +48,7 @@
 
 #ifdef EN_TEST_TILE_ENC 
 FILE* g_fpTileGopCfg = NULL;
-#endif
-#ifdef EN_TEST_TILE_LCU_ENC
+
 FILE* g_fpEncTimeLog = NULL;
 FILE* g_fpEncBitsLog = NULL;
 FILE* g_fpEncInfoLog = NULL;

@@ -471,7 +471,7 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
       pcPic->getPicSym()->getTComTile(i * (pcSlice->getPPS()->getNumColumnsMinus1()+1) + j)->setTileHeight( pcPic->getPicSym()->getFrameHeightInCU()-uiCummulativeTileHeight );
     }
   }
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_DEC
   printf("\n\n");
   for(j=0; j < pcSlice->getPPS()->getNumRowsMinus1()+1; j++)
   {

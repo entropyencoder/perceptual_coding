@@ -993,7 +993,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 #endif
     }
 #endif
-#ifdef EN_TEST_TILE_LCU_ENC
+#ifdef EN_TEST_TILE_ENC
 #ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU encoding
 #endif
@@ -1293,7 +1293,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
       m_pcRateCtrl->updataRCUnitStatus();
     }
 #endif
-#ifdef EN_TEST_TILE_LCU_ENC
+#ifdef EN_TEST_TILE_ENC
 #ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     printf("%6f, ", 
@@ -1464,7 +1464,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
 #endif
     }
 #endif
-#ifdef EN_TEST_TILE_LCU_ENC
+#ifdef EN_TEST_TILE_ENC
 #ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU encoding
 #endif
@@ -1668,7 +1668,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
         m_pcBufferSbacCoders[uiTileCol].loadContexts( &pcSbacCoders[uiSubStrm] );
       }
     }
-#ifdef EN_TEST_TILE_LCU_ENC
+#ifdef EN_TEST_TILE_ENC
 #ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     printf("%6f , ", 

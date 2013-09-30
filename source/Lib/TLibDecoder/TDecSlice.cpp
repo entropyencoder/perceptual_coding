@@ -37,7 +37,7 @@
 
 #include "TDecSlice.h"
 
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_DEC
 #include <time.h>
 #ifndef _MSC_VER
 #include <sys/time.h>
@@ -139,7 +139,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   TComSlice*  pcSlice = rpcPic->getSlice(rpcPic->getCurrSliceIdx());
   Int  iNumSubstreams = pcSlice->getPPS()->getNumSubstreams();
 
-//#ifdef EN_TEST_TILE
+//#ifdef EN_TEST_TILE_DEC
 //  printf("uiTilesAcross: %d\n", uiTilesAcross);
 //  printf("iNumSubstreams: %d\n", iNumSubstreams);
 //#endif
@@ -196,7 +196,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   Int iNumSubstreamsPerTile = 1; // if independent.
   Bool depSliceSegmentsEnabled = rpcPic->getSlice(rpcPic->getCurrSliceIdx())->getPPS()->getDependentSliceSegmentsEnabledFlag();
   uiTileStartLCU = rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iStartCUAddr))->getFirstCUAddr();
-//#ifdef EN_TEST_TILE
+//#ifdef EN_TEST_TILE_DEC
 //  printf(" uiTileStartLCU: %d\n", uiTileStartLCU);
 //#endif
   if( depSliceSegmentsEnabled )
@@ -230,7 +230,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       CTXMem[0]->loadContexts(pcSbacDecoder);
     }
   }
-#ifdef EN_TEST_TILE 
+#ifdef EN_TEST_TILE_DEC
 #ifndef _MSC_VER
   struct timeval cur_time, prev_time;
   gettimeofday(&cur_time, NULL); 
@@ -244,7 +244,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   for( Int iCUAddr = iStartCUAddr; !uiIsLast && iCUAddr < rpcPic->getNumCUsInFrame(); iCUAddr = rpcPic->getPicSym()->xCalculateNxtCUAddr(iCUAddr) )
   {
     
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_DEC
     if(iCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getFirstCUAddr())
     {
 #ifndef _MSC_VER
@@ -258,7 +258,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 #endif
     }
 #endif
-#ifdef EN_TEST_TILE_LCU
+#ifdef EN_TEST_TILE_DEC
 #ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU decoding
 #endif
@@ -404,7 +404,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
         }
       }
     }
-//#ifdef EN_TEST_TILE
+//#ifdef EN_TEST_TILE_DEC
 //    printf(" uiTileStartLCU: %d, iCUAddr: %d, rpcPic->getPicSym()->getTileIdxMap(iCUAddr): %d\n", uiTileStartLCU, iCUAddr, rpcPic->getPicSym()->getTileIdxMap(iCUAddr));
 //#endif
 //#ifdef EN_TEST_TILE_LCU
@@ -447,7 +447,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       CTXMem[0]->loadContexts( pcSbacDecoder );//ctx end of dep.slice
       return;
     }
-#ifdef EN_TEST_TILE_LCU
+#ifdef EN_TEST_TILE_DEC
 #ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     //printf("> CU #%04d decoding elapsed time (sec): %f\n", 
@@ -461,7 +461,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 #endif
 #endif
   }
-#ifdef EN_TEST_TILE
+#ifdef EN_TEST_TILE_DEC
 #ifndef _MSC_VER
   gettimeofday(&cur_time, NULL);
   printf("* CU-level decoding loop ends.   cur_time: %f, diff_time: %f\n", 
