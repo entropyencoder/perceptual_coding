@@ -41,6 +41,55 @@
 #include <time.h>
 #ifndef _MSC_VER
 #include <sys/time.h>
+#else
+
+#include <windows.h>
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+#else
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+#endif
+struct timezone
+{
+  int  tz_minuteswest; /* minutes W of Greenwich */
+  int  tz_dsttime;     /* type of dst correction */
+};
+
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+  FILETIME ft;
+  unsigned __int64 tmpres = 0;
+  static int tzflag;
+
+  if (NULL != tv)
+  {
+    GetSystemTimeAsFileTime(&ft);
+
+    tmpres |= ft.dwHighDateTime;
+    tmpres <<= 32;
+    tmpres |= ft.dwLowDateTime;
+
+    /*converting file time to unix epoch*/
+    tmpres /= 10;  /*convert into microseconds*/
+    tmpres -= DELTA_EPOCH_IN_MICROSECS;
+    tv->tv_sec = (long)(tmpres / 1000000UL);
+    tv->tv_usec = (long)(tmpres % 1000000UL);
+  }
+
+  if (NULL != tz)
+  {
+    if (!tzflag)
+    {
+      _tzset();
+      tzflag++;
+    }
+    tz->tz_minuteswest = _timezone / 60;
+    tz->tz_dsttime = _daylight;
+  }
+
+  return 0;
+}
+
 #endif
 #endif
 
@@ -231,7 +280,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
     }
   }
 #ifdef EN_TEST_TILE_DEC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
   struct timeval cur_time, prev_time;
   gettimeofday(&cur_time, NULL); 
   printf("\n* CU-level decoding loop starts. cur_time: %f\n", 
@@ -239,7 +288,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
   prev_time = cur_time;
   //printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
   //printf(" rpcPic->getPicSym()->getNumTiles(): %d\n\n", rpcPic->getPicSym()->getNumTiles());
-#endif
+//#endif
 #endif
   for( Int iCUAddr = iStartCUAddr; !uiIsLast && iCUAddr < rpcPic->getNumCUsInFrame(); iCUAddr = rpcPic->getPicSym()->xCalculateNxtCUAddr(iCUAddr) )
   {
@@ -247,7 +296,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 #ifdef EN_TEST_TILE_DEC
     if(iCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getFirstCUAddr())
     {
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
       gettimeofday(&cur_time, NULL);
       printf("> TileIdx(%2d) decoding starts.   cur_time: %f, diff_time: %f\n", 
                       rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
@@ -255,13 +304,13 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
                       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
       prev_time = cur_time;
       //m_dDecTime += (Double)(clock()-iBeforeTime) / CLOCKS_PER_SEC;
-#endif
+//#endif
     }
 #endif
 #ifdef EN_TEST_TILE_DEC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU decoding
-#endif
+//#endif
 #endif
     pcCU = rpcPic->getCU( iCUAddr );
     pcCU->initCU( rpcPic, iCUAddr );
@@ -448,7 +497,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       return;
     }
 #ifdef EN_TEST_TILE_DEC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     //printf("> CU #%04d decoding elapsed time (sec): %f\n", 
     //                iCUAddr,
@@ -458,17 +507,17 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
     prev_time = cur_time;
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getRightEdgePosInCU())
       printf("\n");
-#endif
+//#endif
 #endif
   }
 #ifdef EN_TEST_TILE_DEC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
   gettimeofday(&cur_time, NULL);
   printf("* CU-level decoding loop ends.   cur_time: %f, diff_time: %f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;
-#endif
+//#endif
 #endif
 }
 
