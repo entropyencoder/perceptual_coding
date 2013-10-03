@@ -43,6 +43,55 @@
 #include <time.h>
 #ifndef _MSC_VER
 #include <sys/time.h>
+#else   // if defined(_MSC_VER)
+
+#include <windows.h>
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+#else
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+#endif
+struct timezone
+{
+  int  tz_minuteswest; /* minutes W of Greenwich */
+  int  tz_dsttime;     /* type of dst correction */
+};
+
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+  FILETIME ft;
+  unsigned __int64 tmpres = 0;
+  static int tzflag;
+
+  if (NULL != tv)
+  {
+    GetSystemTimeAsFileTime(&ft);
+
+    tmpres |= ft.dwHighDateTime;
+    tmpres <<= 32;
+    tmpres |= ft.dwLowDateTime;
+
+    /*converting file time to unix epoch*/
+    tmpres /= 10;  /*convert into microseconds*/
+    tmpres -= DELTA_EPOCH_IN_MICROSECS;
+    tv->tv_sec = (long)(tmpres / 1000000UL);
+    tv->tv_usec = (long)(tmpres % 1000000UL);
+  }
+
+  if (NULL != tz)
+  {
+    if (!tzflag)
+    {
+      _tzset();
+      tzflag++;
+    }
+    tz->tz_minuteswest = _timezone / 60;
+    tz->tz_dsttime = _daylight;
+  }
+
+  return 0;
+}
+
 #endif
 #endif
 //! \ingroup TLibEncoder
@@ -962,7 +1011,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     }
   }
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
   struct timeval cur_time, prev_time;
   gettimeofday(&cur_time, NULL); 
   //printf("\n* CU-level encoding loop starts. (compressSlice()) cur_time: %f\n", 
@@ -970,7 +1019,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
   fprintf(g_fpEncTimeLog, "* CU-level encoding loop starts. (compressSlice()) cur_time: %f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
   prev_time = cur_time;
-#endif
+//#endif
   //fprintf(g_fpEncBitsLog, "* CU-level encoding loop starts. (compressSlice())\n"); 
   //fprintf(g_fpEncInfoLog, "* CU-level encoding loop starts. (compressSlice())\n"); 
 #endif
@@ -986,7 +1035,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 #ifdef EN_TEST_TILE_ENC
     if(uiCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getFirstCUAddr())
     {
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
       gettimeofday(&cur_time, NULL);
       //printf("> TileIdx(%2d) encoding starts. (compressSlice())   cur_time: %f, diff_time: %f\n", 
       //                rpcPic->getPicSym()->getTileIdxMap(uiCUAddr), 
@@ -998,15 +1047,15 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
                       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
       prev_time = cur_time;
       //m_dDecTime += (Double)(clock()-iBeforeTime) / CLOCKS_PER_SEC;
-#endif
+//#endif
       //fprintf(g_fpEncBitsLog, "> TileIdx(%2d) encoding starts. (compressSlice())\n", rpcPic->getPicSym()->getTileIdxMap(uiCUAddr)); 
       //fprintf(g_fpEncInfoLog, "> TileIdx(%2d) encoding starts. (compressSlice())\n", rpcPic->getPicSym()->getTileIdxMap(uiCUAddr)); 
     }
 #endif
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU encoding
-#endif
+//#endif
 #endif
 
     // initialize CU encoder
@@ -1304,14 +1353,14 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     }
 #endif
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     //printf("%6f, ", 
     //  ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     fprintf(g_fpEncTimeLog, "%6f , ", 
       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     prev_time = cur_time;
-#endif
+//#endif
     //printf("%5u / ", pcCU->getTotalBits());
     //fprintf(g_fpEncBitsLog, "%5u , ", pcCU->getTotalBits());
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getRightEdgePosInCU())
@@ -1343,7 +1392,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
   }
 #endif
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
   gettimeofday(&cur_time, NULL);
   //printf("* CU-level encoding loop ends. (compressSlice())   cur_time: %f, diff_time: %f\n", 
   //                (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
@@ -1352,7 +1401,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;
-#endif
+//#endif
   //fprintf(g_fpEncBitsLog, "* CU-level encoding loop ends. (compressSlice())\n");
   //fprintf(g_fpEncInfoLog, "* CU-level encoding loop ends. (compressSlice())\n");
 #endif
@@ -1460,7 +1509,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
   }
 
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
   struct timeval cur_time, prev_time;
   gettimeofday(&cur_time, NULL); 
   //printf("\n* CU-level encoding loop starts. (encodeSlice()) cur_time: %f\n", 
@@ -1471,7 +1520,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
 #endif
   fprintf(g_fpEncBitsLog, "* CU-level encoding loop starts. (encodeSlice())\n"); 
   fprintf(g_fpEncInfoLog, "* CU-level encoding loop starts. (encodeSlice())\n"); 
-#endif
+//#endif
   UInt uiEncCUOrder;
   for( uiEncCUOrder = uiStartCUAddr /rpcPic->getNumPartInCU();
        uiEncCUOrder < (uiBoundingCUAddr+rpcPic->getNumPartInCU()-1)/rpcPic->getNumPartInCU();
@@ -1480,7 +1529,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
 #ifdef EN_TEST_TILE_ENC
     if(uiCUAddr == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getFirstCUAddr())
     {
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
       gettimeofday(&cur_time, NULL);
       //printf("> TileIdx(%2d) encoding starts. (encodeSlice())   cur_time: %f, diff_time: %f\n", 
       //                rpcPic->getPicSym()->getTileIdxMap(uiCUAddr), 
@@ -1492,7 +1541,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
                       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
       prev_time = cur_time;
       //m_dDecTime += (Double)(clock()-iBeforeTime) / CLOCKS_PER_SEC;
-#endif
+//#endif
       fprintf(g_fpEncBitsLog, "> TileIdx(%2d) encoding starts. (encodeSlice())\n", 
                       rpcPic->getPicSym()->getTileIdxMap(uiCUAddr));
       fprintf(g_fpEncInfoLog, "> TileIdx(%2d) encoding starts. (encodeSlice())\n", 
@@ -1500,9 +1549,9 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
     }
 #endif
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU encoding
-#endif
+//#endif
 #endif
     if( m_pcCfg->getUseSBACRD() )
     {
@@ -1704,14 +1753,14 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
       }
     }
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     //printf("%6f , ", 
     //  ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     fprintf(g_fpEncTimeLog, "%6f , ", 
       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     prev_time = cur_time;
-#endif
+//#endif
     //printf("%5u / ", pcCU->getTotalBits());
     fprintf(g_fpEncBitsLog, "%5u , ", pcCU->getTotalBits());
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getRightEdgePosInCU())
@@ -1749,7 +1798,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
     }
   }
 #ifdef EN_TEST_TILE_ENC
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
   gettimeofday(&cur_time, NULL);
   //printf("* CU-level encoding loop ends. (encodeSlice())   cur_time: %f, diff_time: %f\n", 
   //                (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
@@ -1758,7 +1807,7 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;
-#endif
+//#endif
   fprintf(g_fpEncBitsLog, "* CU-level encoding loop ends. (encodeSlice())\n");
   fprintf(g_fpEncInfoLog, "* CU-level encoding loop ends. (encodeSlice())\n");
 #endif
