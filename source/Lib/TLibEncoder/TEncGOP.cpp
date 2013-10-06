@@ -354,6 +354,58 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   Int picSptDpbOutputDuDelay = 0;
   UInt *accumBitsDU = NULL;
   UInt *accumNalsDU = NULL;
+
+#ifdef EN_TEST_TILE_ENC 
+  // ** Tile partitioning-related syntaxes in HEVC **
+  //
+  // num_tile_columns_minus1
+  // num_tile_rows_minus1
+  // uniform_spacing_flag
+  // if( !uniform_spacing_flag ) {
+  //   for( i = 0; i < num_tile_columns_minus1; i++ )
+  //     column_width_minus1[ i ]
+  //   for( i = 0; i < num_tile_rows_minus1; i++ )
+  //     row_height_minus1[ i ]
+  // }
+
+  // ** Custom GOP-level tile config file **
+  // NOTE: The sequence's first frame (i.e. m_bSeqFirst) tile is configured by HM cfg file, not the custom one.
+  // NOTE: Only partitions' width and height can be adjusted. The geometry is set by HM cfg file.
+  //
+  // [change the previous setting] (1: change, i.e. another PPS is inserted for this picture.)
+  // [uniform_spacing_flag] (exist only if [change the previous setting] is '1')
+  // [col width #0] ... [col width #(num_tile_columns_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
+  // [row height #0]  ...  [row height #(num_tile_rows_minus1 - 1)] (exist only if [uniform_spacing_flag] is '0')
+  // 
+  // One example where GOP size is 8.
+  // 0       (Keep config in DOC #0)
+  // 1 0 4 2 (Change w/ non-uniform tiles of which the first is 4-LCU-wide and 2-LCU-high in DOC #1)
+  // 0
+  // 1 1     (Change w/ uniform tiles in DOC #3) 
+  // 0
+  // 1 0 3 3
+  // 1 1
+  // 0
+
+  //FILE* g_fpTileGopCfg = NULL;
+  bool  bTileCfgChanged = false;
+  bool  bTileUniformSpacing = false;
+  unsigned int* uiColWidth = NULL;
+  unsigned int* uiRowHeight = NULL;
+
+  if(!m_bSeqFirst)
+  {
+    if((g_fpTileGopCfg = fopen("tile_gop_cfg.txt", "r"))==NULL)
+    {
+      printf("> No custom tile cfg file is found.\n");
+    }
+  }
+#endif
+
+//#ifdef EN_TEST_TILE_ENC
+//  printf("> m_iGopSize: %d\n", m_iGopSize);
+//#endif
+
   SEIDecodingUnitInfo decodingUnitInfoSEI;
   for ( Int iGOPid=0; iGOPid < m_iGopSize; iGOPid++ )
   {
@@ -789,6 +841,25 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     //create the TComTileArray
     pcPic->getPicSym()->xCreateTComTileArray();
 
+#ifdef EN_TEST_TILE_ENC
+    if ((!m_bSeqFirst) && (g_fpTileGopCfg!=NULL))
+    {
+      int tmp=0;
+      if(!fscanf(g_fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
+      bTileCfgChanged = (tmp==1) ? true : false;
+    }
+    if (bTileCfgChanged)
+    {
+      int tmp;
+      printf("> Tile cfg changed! ");
+      uiColWidth  = new unsigned int[pcSlice->getPPS()->getNumColumnsMinus1()];
+      uiRowHeight = new unsigned int[pcSlice->getPPS()->getNumRowsMinus1()   ];
+      if(!fscanf(g_fpTileGopCfg, "%d", &tmp)) printf("Custom tile GOP cfg read error!");   
+      bTileUniformSpacing = (tmp==1) ? true : false;
+      pcSlice->getPPS()->setUniformSpacingFlag(bTileUniformSpacing); 
+    }
+#endif  
+
     if( pcSlice->getPPS()->getUniformSpacingFlag() == 1 )
     {
       //set the width for each tile
@@ -815,6 +886,24 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     }
     else
     {
+#ifdef EN_TEST_TILE_ENC
+      if (bTileCfgChanged && !bTileUniformSpacing)
+      {
+        for(j=0; j < pcPic->getPicSym()->getNumColumnsMinus1(); j++)
+        {
+          //fscanf(g_fpTileGopCfg, "%d", &uiColWidth[j]);
+          if(!fscanf(g_fpTileGopCfg, "%d", &uiColWidth[j])) printf("Custom tile GOP cfg read error!");   
+        }
+        pcSlice->getPPS()->setColumnWidth(uiColWidth);
+
+        for(j=0; j < pcPic->getPicSym()->getNumRowsMinus1(); j++)
+        {
+          //fscanf(g_fpTileGopCfg, "%d", &uiRowHeight[j]);
+          if(!fscanf(g_fpTileGopCfg, "%d", &uiRowHeight[j])) printf("Custom tile GOP cfg read error!");   
+        }
+        pcSlice->getPPS()->setRowHeight(uiRowHeight);
+      }
+#endif
       //set the width for each tile
       for(j=0; j < pcPic->getPicSym()->getNumRowsMinus1()+1; j++)
       {
@@ -881,6 +970,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       pcSlice->setNextSliceSegment( false );
       assert(pcPic->getNumAllocatedSlice() == startCUAddrSliceIdx);
       m_pcSliceEncoder->precompressSlice( pcPic );
+#ifdef EN_TEST_TILE_ENC
+      fprintf(g_fpEncTimeLog, "POC: %4d\n", pcPic->getPOC());
+      fprintf(g_fpEncBitsLog, "POC: %4d\n", pcPic->getPOC());
+      fprintf(g_fpEncInfoLog, "POC: %4d\n", pcPic->getPOC());
+#endif
       m_pcSliceEncoder->compressSlice   ( pcPic );
 
       Bool bNoBinBitConstraintViolated = (!pcSlice->isNextSlice() && !pcSlice->isNextSliceSegment());
@@ -1021,6 +1115,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       nalu = NALUnit(NAL_UNIT_PPS);
       m_pcEntropyCoder->setBitstream(&nalu.m_Bitstream);
       m_pcEntropyCoder->encodePPS(pcSlice->getPPS());
+#ifdef EN_TEST_TILE_ENC
+      printf("> encodePPS() is called!\n");
+#endif
       writeRBSPTrailingBits(nalu.m_Bitstream);
       accessUnit.push_back(new NALUnitEBSP(nalu));
 #if RATE_CONTROL_LAMBDA_DOMAIN
@@ -1031,6 +1128,25 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
       m_bSeqFirst = false;
     }
+#ifdef EN_TEST_TILE_ENC
+    //if ( !m_bSeqFirst )
+    if (bTileCfgChanged)
+    {
+      OutputNALUnit nalu(NAL_UNIT_PPS);
+      
+      nalu = NALUnit(NAL_UNIT_PPS);
+      m_pcEntropyCoder->setBitstream(&nalu.m_Bitstream);
+      m_pcEntropyCoder->encodePPS(pcSlice->getPPS());
+      printf("> encodePPS() is called!\n");
+      writeRBSPTrailingBits(nalu.m_Bitstream);
+      accessUnit.push_back(new NALUnitEBSP(nalu));
+      delete [] uiColWidth ;
+      delete [] uiRowHeight;
+#if RATE_CONTROL_LAMBDA_DOMAIN
+      actualTotalBits += UInt(accessUnit.back()->m_nalUnitData.str().size()) * 8;
+#endif
+    }
+#endif
 
     if (writeSOP) // write SOP description SEI (if enabled) at the beginning of GOP
     {
@@ -1845,6 +1961,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
       delete[] pcSubstreamsOut;
   }
+#ifdef EN_TEST_TILE_ENC
+  if(g_fpTileGopCfg!=NULL)
+  {
+    fclose(g_fpTileGopCfg);
+  }
+#endif
 #if !RATE_CONTROL_LAMBDA_DOMAIN
   if(m_pcCfg->getUseRateCtrl())
   {

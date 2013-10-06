@@ -31,7 +31,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>${workspace_loc:}/${ProjName}/build/linux</value>
+					<value>/home/cys4/ASSEMBLA_SVN/perceptual_coding/branches/HM-11.0_partitioning_tests/build/linux</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>

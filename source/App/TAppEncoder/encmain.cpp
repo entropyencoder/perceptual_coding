@@ -84,8 +84,23 @@ int main(int argc, char* argv[])
   double dResult;
   long lBefore = clock();
 
+#ifdef EN_TEST_TILE_ENC
+  g_fpEncTimeLog = fopen("enc_time.txt", "w");
+  g_fpEncBitsLog = fopen("enc_bits.txt", "w");
+  g_fpEncInfoLog = fopen("enc_info.txt", "w");
+  if(g_fpEncTimeLog==NULL || g_fpEncBitsLog==NULL || g_fpEncInfoLog==NULL)
+  {
+    printf("Encoding log file creation errors!\n");
+    return 1;
+  }
+#endif
   // call encoding function
   cTAppEncTop.encode();
+#ifdef EN_TEST_TILE_ENC
+  fclose(g_fpEncTimeLog);
+  fclose(g_fpEncBitsLog);
+  fclose(g_fpEncInfoLog);
+#endif
 
   // ending time
   dResult = (double)(clock()-lBefore) / CLOCKS_PER_SEC;

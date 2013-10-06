@@ -46,6 +46,19 @@
 //! \ingroup TLibCommon
 //! \{
 
+#ifdef EN_TEST_TILE_ENC 
+extern FILE* g_fpTileGopCfg;
+
+extern FILE* g_fpEncTimeLog;
+extern FILE* g_fpEncBitsLog;
+extern FILE* g_fpEncInfoLog;
+#endif
+#ifdef EN_TEST_TILE_DEC
+extern FILE* g_fpDecTimeLog;
+extern FILE* g_fpDecBitsLog;
+extern FILE* g_fpDecInfoLog;
+#endif
+
 // ====================================================================================================================
 // Macros
 // ====================================================================================================================
