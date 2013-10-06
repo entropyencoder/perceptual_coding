@@ -1397,7 +1397,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
   //printf("* CU-level encoding loop ends. (compressSlice())   cur_time: %f, diff_time: %f\n", 
   //                (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
   //                ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
-  fprintf(g_fpEncTimeLog, "* CU-level encoding loop ends. (compressSlice())   cur_time: %f, diff_time: %f\n", 
+  fprintf(g_fpEncTimeLog, "* CU-level encoding loop ends. (compressSlice())   cur_time: %f, diff_time: %f\n\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;
@@ -1763,6 +1763,9 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
 //#endif
     //printf("%5u / ", pcCU->getTotalBits());
     fprintf(g_fpEncBitsLog, "%5u , ", pcCU->getTotalBits());
+    //printf("LCU %4d, ", uiCUAddr); 
+    //printf("pcCU->getPartitionSize(): %d, ", pcCU->getPartitionSize()[0]);
+    //printf("pcCU->getPredictionMode(): %d\n", pcCU->getPredictionMode()[0]);
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getRightEdgePosInCU())
     {
       //printf("\n");
@@ -1803,13 +1806,13 @@ Void TEncSlice::encodeSlice   ( TComPic*& rpcPic, TComOutputBitstream* pcSubstre
   //printf("* CU-level encoding loop ends. (encodeSlice())   cur_time: %f, diff_time: %f\n", 
   //                (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
   //                ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
-  fprintf(g_fpEncTimeLog, "* CU-level encoding loop ends. (encodeSlice())   cur_time: %f, diff_time: %f\n", 
+  fprintf(g_fpEncTimeLog, "* CU-level encoding loop ends. (encodeSlice())   cur_time: %f, diff_time: %f\n\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;
 //#endif
-  fprintf(g_fpEncBitsLog, "* CU-level encoding loop ends. (encodeSlice())\n");
-  fprintf(g_fpEncInfoLog, "* CU-level encoding loop ends. (encodeSlice())\n");
+  fprintf(g_fpEncBitsLog, "* CU-level encoding loop ends. (encodeSlice())\n\n");
+  fprintf(g_fpEncInfoLog, "* CU-level encoding loop ends. (encodeSlice())\n\n");
 #endif
 }
 

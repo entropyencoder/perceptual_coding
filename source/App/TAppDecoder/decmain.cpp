@@ -75,8 +75,23 @@ int main(int argc, char* argv[])
   double dResult;
   long lBefore = clock();
 
+#ifdef EN_TEST_TILE_DEC
+  g_fpDecTimeLog = fopen("dec_time.txt", "w");
+  g_fpDecBitsLog = fopen("dec_bits.txt", "w");
+  g_fpDecInfoLog = fopen("dec_info.txt", "w");
+  if(g_fpDecTimeLog==NULL || g_fpDecBitsLog==NULL || g_fpDecInfoLog==NULL)
+  {
+    printf("Decoding log file creation errors!\n");
+    return 1;
+  }
+#endif
   // call decoding function
   cTAppDecTop.decode();
+#ifdef EN_TEST_TILE_DEC
+  fclose(g_fpDecTimeLog);
+  fclose(g_fpDecBitsLog);
+  fclose(g_fpDecInfoLog);
+#endif
 
   if (g_md5_mismatch)
   {

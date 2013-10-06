@@ -53,6 +53,11 @@ FILE* g_fpEncTimeLog = NULL;
 FILE* g_fpEncBitsLog = NULL;
 FILE* g_fpEncInfoLog = NULL;
 #endif
+#ifdef EN_TEST_TILE_DEC
+FILE* g_fpDecTimeLog = NULL;
+FILE* g_fpDecBitsLog = NULL;
+FILE* g_fpDecInfoLog = NULL;
+#endif
 
 // initialize ROM variables
 Void initROM()

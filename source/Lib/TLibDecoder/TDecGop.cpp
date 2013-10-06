@@ -156,6 +156,9 @@ Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic*& rpcPic)
   m_pcSbacDecoders[0].load(m_pcSbacDecoder);
 #ifdef EN_TEST_TILE_DEC
   // ... call TDecSlice::decompressSlice() ...
+  fprintf(g_fpDecTimeLog, "POC: %4d\n", rpcPic->getPOC());
+  fprintf(g_fpDecBitsLog, "POC: %4d\n", rpcPic->getPOC());
+  fprintf(g_fpDecInfoLog, "POC: %4d\n", rpcPic->getPOC());
 #endif  
   m_pcSliceDecoder->decompressSlice( ppcSubstreams, rpcPic, m_pcSbacDecoder, m_pcSbacDecoders);
   m_pcEntropyDecoder->setBitstream(  ppcSubstreams[uiNumSubstreams-1] );

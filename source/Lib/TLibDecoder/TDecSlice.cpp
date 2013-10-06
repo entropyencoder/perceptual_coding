@@ -283,7 +283,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 //#ifndef _MSC_VER
   struct timeval cur_time, prev_time;
   gettimeofday(&cur_time, NULL); 
-  printf("\n* CU-level decoding loop starts. cur_time: %f\n", 
+  fprintf(g_fpDecTimeLog, "* CU-level decoding loop starts. cur_time: %f\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0);
   prev_time = cur_time;
   //printf(" rpcPic->getNumCUsInFrame(): %d\n", rpcPic->getNumCUsInFrame());
@@ -298,7 +298,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
     {
 //#ifndef _MSC_VER
       gettimeofday(&cur_time, NULL);
-      printf("> TileIdx(%2d) decoding starts.   cur_time: %f, diff_time: %f\n", 
+      fprintf(g_fpDecTimeLog, "> TileIdx(%2d) decoding starts.   cur_time: %f, diff_time: %f\n", 
                       rpcPic->getPicSym()->getTileIdxMap(iCUAddr), 
                       (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
@@ -502,18 +502,18 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
     //printf("> CU #%04d decoding elapsed time (sec): %f\n", 
     //                iCUAddr,
     //                ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
-    printf("%f, ", 
+    fprintf(g_fpDecTimeLog, "%6f , ", 
       ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
     prev_time = cur_time;
     if ( uiCol == rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(iCUAddr))->getRightEdgePosInCU())
-      printf("\n");
+      fprintf(g_fpDecTimeLog, "\n");
 //#endif
 #endif
   }
 #ifdef EN_TEST_TILE_DEC
 //#ifndef _MSC_VER
   gettimeofday(&cur_time, NULL);
-  printf("* CU-level decoding loop ends.   cur_time: %f, diff_time: %f\n", 
+  fprintf(g_fpDecTimeLog, "* CU-level decoding loop ends.   cur_time: %f, diff_time: %f\n\n", 
                   (double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0,
                   ((double)cur_time.tv_sec + (double)cur_time.tv_usec/1000000.0)-((double)prev_time.tv_sec + (double)prev_time.tv_usec/1000000.0));
   prev_time = cur_time;

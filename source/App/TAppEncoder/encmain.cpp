@@ -96,12 +96,12 @@ int main(int argc, char* argv[])
 #endif
   // call encoding function
   cTAppEncTop.encode();
-
 #ifdef EN_TEST_TILE_ENC
   fclose(g_fpEncTimeLog);
   fclose(g_fpEncBitsLog);
   fclose(g_fpEncInfoLog);
 #endif
+
   // ending time
   dResult = (double)(clock()-lBefore) / CLOCKS_PER_SEC;
   printf("\n Total Time: %12.3f sec.\n", dResult);
