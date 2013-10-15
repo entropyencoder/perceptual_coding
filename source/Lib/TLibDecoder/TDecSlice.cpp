@@ -307,7 +307,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
 //#endif
     }
 #endif
-#ifdef EN_TEST_TILE_DEC
+#ifdef EN_TEST_TILE_LCU_DEC
 //#ifndef _MSC_VER
     gettimeofday(&prev_time, NULL); // Measure start time of current LCU decoding
 //#endif
@@ -496,7 +496,7 @@ Void TDecSlice::decompressSlice(TComInputBitstream** ppcSubstreams, TComPic*& rp
       CTXMem[0]->loadContexts( pcSbacDecoder );//ctx end of dep.slice
       return;
     }
-#ifdef EN_TEST_TILE_DEC
+#ifdef EN_TEST_TILE_LCU_DEC
 //#ifndef _MSC_VER
     gettimeofday(&cur_time, NULL);
     //printf("> CU #%04d decoding elapsed time (sec): %f\n", 

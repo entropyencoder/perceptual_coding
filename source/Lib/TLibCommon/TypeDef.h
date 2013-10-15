@@ -45,6 +45,10 @@
 #define EN_TEST_TILE_DEC
 #define EN_TEST_TILE_ENC
 
+#ifdef EN_TEST_TILE_DEC
+//#define EN_TEST_TILE_LCU_DEC
+#endif
+
 
 #define FIX1071 1 ///< fix for issue #1071
 
