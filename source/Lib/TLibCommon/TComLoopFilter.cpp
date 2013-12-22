@@ -216,6 +216,7 @@ Void TComLoopFilter::xDeblockCU( TComDataCU* pcCU, UInt uiAbsZorderIdx, UInt uiD
   
   UInt uiSizeInPU = pcPic->getNumPartInWidth()>>(uiDepth);
   
+  printf("[yschoi] PartIdxIncr: %d\n", PartIdxIncr);
   for ( UInt iEdge = 0; iEdge < uiSizeInPU ; iEdge+=PartIdxIncr)
   {
     xEdgeFilterLuma     ( pcCU, uiAbsZorderIdx, uiDepth, iDir, iEdge );
@@ -589,6 +590,7 @@ Void TComLoopFilter::xEdgeFilterLuma( TComDataCU* pcCU, UInt uiAbsZorderIdx, UIn
       Int iThrCut = iTc*10;
 
       UInt  uiBlocksInPart = uiPelsInPart / 4 ? uiPelsInPart / 4 : 1;
+      printf("[yschoi] uiBlocksInPart: %d, uiPelsInPart: %d\n", uiBlocksInPart, uiPelsInPart);
       for (UInt iBlkIdx = 0; iBlkIdx<uiBlocksInPart; iBlkIdx ++)
       {
         // yschoi: The following statements calculate Eq.(1) in the paper, "HEVC Deblocking Filter", TCSVT, 2012.
