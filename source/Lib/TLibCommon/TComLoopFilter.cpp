@@ -135,6 +135,8 @@ Void TComLoopFilter::loopFilterPic( TComPic* pcPic )
 
     ::memset( m_aapucBS       [EDGE_VER], 0, sizeof( UChar ) * m_uiNumPartitions );
     ::memset( m_aapbEdgeFilter[EDGE_VER], 0, sizeof( Bool  ) * m_uiNumPartitions );
+    
+    printf("\n[yschoi] deblocking hor uiCUAddr=%d\n", uiCUAddr);
 
     // CU-based deblocking
     xDeblockCU( pcCU, 0, 0, EDGE_VER );
@@ -147,6 +149,8 @@ Void TComLoopFilter::loopFilterPic( TComPic* pcPic )
 
     ::memset( m_aapucBS       [EDGE_HOR], 0, sizeof( UChar ) * m_uiNumPartitions );
     ::memset( m_aapbEdgeFilter[EDGE_HOR], 0, sizeof( Bool  ) * m_uiNumPartitions );
+
+    printf("\n[yschoi] deblocking ver uiCUAddr=%d\n", uiCUAddr);
 
     // CU-based deblocking
     xDeblockCU( pcCU, 0, 0, EDGE_HOR );
@@ -218,11 +222,12 @@ Void TComLoopFilter::xDeblockCU( TComDataCU* pcCU, UInt uiAbsZorderIdx, UInt uiD
   
   UInt uiSizeInPU = pcPic->getNumPartInWidth()>>(uiDepth);
   
-  printf("[yschoi] pcPic->getNumPartInWidth(): %d, uiDepth: %d\n", pcPic->getNumPartInWidth(), uiDepth);
-  printf("[yschoi] PartIdxIncr: %d, uiSizeInPU: %d\n", PartIdxIncr, uiSizeInPU);
+  //printf("[yschoi] pcPic->getNumPartInWidth(): %d, uiDepth: %d\n", pcPic->getNumPartInWidth(), uiDepth);
+  //printf("[yschoi] PartIdxIncr: %d, uiSizeInPU: %d\n", PartIdxIncr, uiSizeInPU);
+  // yschoi: iterate every 4 pixels in horizontal or vertical direction
   for ( UInt iEdge = 0; iEdge < uiSizeInPU ; iEdge+=PartIdxIncr)
   {
-    printf("[yschoi] xEdgeFilterLuma() is called.\n");
+    printf("[yschoi] call xEdgeFilterLuma() at uiAbsZorderIdx=%d, iEdge=%d.\n", uiAbsZorderIdx, iEdge);
     xEdgeFilterLuma     ( pcCU, uiAbsZorderIdx, uiDepth, iDir, iEdge );
     if ( (uiPelsInPart>DEBLOCK_SMALLEST_BLOCK) || (iEdge % ( (DEBLOCK_SMALLEST_BLOCK<<1)/uiPelsInPart ) ) == 0 )
     {
@@ -568,7 +573,7 @@ Void TComLoopFilter::xEdgeFilterLuma( TComDataCU* pcCU, UInt uiAbsZorderIdx, UIn
   {
     uiBsAbsIdx = xCalcBsIdx( pcCU, uiAbsZorderIdx, iDir, iEdge, iIdx);
     uiBs = m_aapucBS[iDir][uiBsAbsIdx];
-    printf("[yschoi] uiBs=%d\n", uiBs );
+    printf("[yschoi] iIdx=%d, uiBs=%d, \n", iIdx, uiBs );
     if ( uiBs )
     {
       iQP_Q = pcCU->getQP( uiBsAbsIdx );
