@@ -173,6 +173,8 @@ Void TComLoopFilter::xDeblockCU( TComDataCU* pcCU, UInt uiAbsZorderIdx, UInt uiD
   UInt uiCurNumParts = pcPic->getNumPartInCU() >> (uiDepth<<1);
   UInt uiQNumParts   = uiCurNumParts>>2;
   
+  printf("[yschoi] pcPic->getNumPartInCU()=%d, uiDepth=%d, uiCurNumParts=%d, uiQNumParts=%d\n", pcPic->getNumPartInCU(), uiDepth, uiCurNumParts, uiQNumParts);
+
   if( pcCU->getDepth(uiAbsZorderIdx) > uiDepth )
   {
     for ( UInt uiPartIdx = 0; uiPartIdx < 4; uiPartIdx++, uiAbsZorderIdx+=uiQNumParts )
@@ -216,9 +218,11 @@ Void TComLoopFilter::xDeblockCU( TComDataCU* pcCU, UInt uiAbsZorderIdx, UInt uiD
   
   UInt uiSizeInPU = pcPic->getNumPartInWidth()>>(uiDepth);
   
-  printf("[yschoi] PartIdxIncr: %d\n", PartIdxIncr);
+  printf("[yschoi] pcPic->getNumPartInWidth(): %d, uiDepth: %d\n", pcPic->getNumPartInWidth(), uiDepth);
+  printf("[yschoi] PartIdxIncr: %d, uiSizeInPU: %d\n", PartIdxIncr, uiSizeInPU);
   for ( UInt iEdge = 0; iEdge < uiSizeInPU ; iEdge+=PartIdxIncr)
   {
+    printf("[yschoi] xEdgeFilterLuma() is called.\n");
     xEdgeFilterLuma     ( pcCU, uiAbsZorderIdx, uiDepth, iDir, iEdge );
     if ( (uiPelsInPart>DEBLOCK_SMALLEST_BLOCK) || (iEdge % ( (DEBLOCK_SMALLEST_BLOCK<<1)/uiPelsInPart ) ) == 0 )
     {
@@ -559,10 +563,12 @@ Void TComLoopFilter::xEdgeFilterLuma( TComDataCU* pcCU, UInt uiAbsZorderIdx, UIn
     piTmpSrc += iEdge*uiPelsInPart*iStride;
   }
   
+  printf("[yschoi] uiNumParts=%d\n", uiNumParts );
   for ( UInt iIdx = 0; iIdx < uiNumParts; iIdx++ )
   {
     uiBsAbsIdx = xCalcBsIdx( pcCU, uiAbsZorderIdx, iDir, iEdge, iIdx);
     uiBs = m_aapucBS[iDir][uiBsAbsIdx];
+    printf("[yschoi] uiBs=%d\n", uiBs );
     if ( uiBs )
     {
       iQP_Q = pcCU->getQP( uiBsAbsIdx );
