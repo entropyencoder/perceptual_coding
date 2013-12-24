@@ -568,12 +568,12 @@ Void TComLoopFilter::xEdgeFilterLuma( TComDataCU* pcCU, UInt uiAbsZorderIdx, UIn
     piTmpSrc += iEdge*uiPelsInPart*iStride;
   }
   
-  printf("[yschoi] uiNumParts=%d\n", uiNumParts );
+  printf("\t[yschoi] uiNumParts=%d\n", uiNumParts );
   for ( UInt iIdx = 0; iIdx < uiNumParts; iIdx++ )
   {
     uiBsAbsIdx = xCalcBsIdx( pcCU, uiAbsZorderIdx, iDir, iEdge, iIdx);
     uiBs = m_aapucBS[iDir][uiBsAbsIdx];
-    printf("[yschoi] iIdx=%d, uiBs=%d, \n", iIdx, uiBs );
+    printf("\t[yschoi] iIdx=%d, uiBs=%d\n", iIdx, uiBs);
     if ( uiBs )
     {
       iQP_Q = pcCU->getQP( uiBsAbsIdx );
@@ -601,10 +601,14 @@ Void TComLoopFilter::xEdgeFilterLuma( TComDataCU* pcCU, UInt uiAbsZorderIdx, UIn
       Int iThrCut = iTc*10;
 
       UInt  uiBlocksInPart = uiPelsInPart / 4 ? uiPelsInPart / 4 : 1;
-      printf("[yschoi] uiBlocksInPart: %d, uiPelsInPart: %d\n", uiBlocksInPart, uiPelsInPart);
+      //printf("\t[yschoi] uiBlocksInPart: %d, uiPelsInPart: %d\n", uiBlocksInPart, uiPelsInPart);
       for (UInt iBlkIdx = 0; iBlkIdx<uiBlocksInPart; iBlkIdx ++)
       {
+        //printf("\t[yschoi] piTmpSrc addr p0q0: 0x%08x\n", piTmpSrc+iSrcStep*(iIdx*uiPelsInPart+iBlkIdx*4+0));
+        //printf("\t[yschoi] piTmpSrc addr p3q3: 0x%08x\n", piTmpSrc+iSrcStep*(iIdx*uiPelsInPart+iBlkIdx*4+3));
         // yschoi: The following statements calculate Eq.(1) in the paper, "HEVC Deblocking Filter", TCSVT, 2012.
+        // yschoi: For every four pixels, which are aligned to four pixel boundary, calculate the followings to the first and the fourth lines.
+        // yschoi: x[0]x[3]x[4]x[7]x[8]x[11]x[12][x15]... => For aligned four pixels, two middle lines are not involved.
         Int dp0 = xCalcDP( piTmpSrc+iSrcStep*(iIdx*uiPelsInPart+iBlkIdx*4+0), iOffset);
         Int dq0 = xCalcDQ( piTmpSrc+iSrcStep*(iIdx*uiPelsInPart+iBlkIdx*4+0), iOffset);
         Int dp3 = xCalcDP( piTmpSrc+iSrcStep*(iIdx*uiPelsInPart+iBlkIdx*4+3), iOffset);
