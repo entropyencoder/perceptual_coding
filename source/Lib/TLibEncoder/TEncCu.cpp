@@ -278,6 +278,13 @@ Void TEncCu::compressCtu( TComDataCU* pCtu, UChar* lastPLTSize, UChar* lastPLTUs
 
   // yschoi
 #if DEBUG_RECON
+  printf("m_ppcOrigYuv[0]\n");
+  for (int i = 0; i < pCtu->getSlice()->getSPS()->getMaxCUHeight(); i++) {
+    for (int j = 0; j < pCtu->getSlice()->getSPS()->getMaxCUWidth(); j++) {
+      printf("%4d", *m_ppcOrigYuv[0]->getAddrPix(COMPONENT_Y, j, i));
+    }
+    printf("\n");
+  }
   printf("m_ppcPredYuvBest[0]\n");
   for (int i = 0; i < pCtu->getSlice()->getSPS()->getMaxCUHeight(); i++) {
     for (int j = 0; j < pCtu->getSlice()->getSPS()->getMaxCUWidth(); j++) {
