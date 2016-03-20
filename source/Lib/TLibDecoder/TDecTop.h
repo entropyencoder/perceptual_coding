@@ -1,9 +1,9 @@
 /* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
- * granted under this license.  
+ * granted under this license.
  *
- * Copyright (c) 2010-2013, ITU/ISO/IEC
+ * Copyright (c) 2010-2015, ITU/ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@
 #include "TLibCommon/TComPicYuv.h"
 #include "TLibCommon/TComPic.h"
 #include "TLibCommon/TComTrQuant.h"
+#include "TLibCommon/TComPrediction.h"
 #include "TLibCommon/SEI.h"
 
 #include "TDecGop.h"
@@ -51,7 +52,7 @@
 #include "TDecCAVLC.h"
 #include "SEIread.h"
 
-struct InputNALUnit;
+class InputNALUnit;
 
 //! \ingroup TLibDecoder
 //! \{
@@ -65,16 +66,16 @@ class TDecTop
 {
 private:
   Int                     m_iMaxRefPicNum;
-  
+
+  NalUnitType             m_associatedIRAPType; ///< NAL unit type of the associated IRAP picture
   Int                     m_pocCRA;            ///< POC number of the latest CRA picture
-  Bool                    m_prevRAPisBLA;      ///< true if the previous RAP (CRA/CRANT/BLA/BLANT/IDR) picture is a BLA/BLANT picture
   Int                     m_pocRandomAccess;   ///< POC number of the random access point (the first IDR or CRA picture)
 
   TComList<TComPic*>      m_cListPic;         //  Dynamic buffer
-  ParameterSetManagerDecoder m_parameterSetManagerDecoder;  // storage for parameter sets 
+  ParameterSetManager     m_parameterSetManager;  // storage for parameter sets
   TComSlice*              m_apcSlicePilot;
-  
-  SEIMessages             m_SEIs; ///< List of SEI messages that have been received before the first slice and between slices
+
+  SEIMessages             m_SEIs; ///< List of SEI messages that have been received before the first slice and between slices, excluding prefix SEIs...
 
   // functional classes
   TComPrediction          m_cPrediction;
@@ -95,36 +96,90 @@ private:
   TComPic*                m_pcPic;
   UInt                    m_uiSliceIdx;
   Int                     m_prevPOC;
+  Int                     m_prevTid0POC;
   Bool                    m_bFirstSliceInPicture;
   Bool                    m_bFirstSliceInSequence;
+  Bool                    m_prevSliceSkipped;
+  Int                     m_skippedPOC;
+  Bool                    m_bFirstSliceInBitstream;
+  Int                     m_lastPOCNoOutputPriorPics;
+  Bool                    m_isNoOutputPriorPics;
+  Bool                    m_craNoRaslOutputFlag;    //value of variable NoRaslOutputFlag of the last CRA pic
+#if O0043_BEST_EFFORT_DECODING
+  UInt                    m_forceDecodeBitDepth;
+#endif
+  std::ostream           *m_pDecodedSEIOutputStream;
+
+  Bool                    m_warningMessageSkipPicture;
+
+  std::list<InputNALUnit*> m_prefixSEINALUs; /// Buffered up prefix SEI NAL Units.
+
+#if SCM_U0181_STORAGE_BOTH_VERSIONS_CURR_DEC_PIC
+  UInt                    m_DPBFullness;
+  TComPic*                m_pcPicBeforeILF;
+  TComPic*                m_pcPicAfterILF;
+  Bool                    m_pcTwoVersionsOfCurrDecPicFlag;
+  Bool                    m_bIBC;
+#endif
 
 public:
   TDecTop();
   virtual ~TDecTop();
-  
+
   Void  create  ();
   Void  destroy ();
 
-  void setDecodedPictureHashSEIEnabled(Int enabled) { m_cGopDecoder.setDecodedPictureHashSEIEnabled(enabled); }
+  Void setDecodedPictureHashSEIEnabled(Int enabled) { m_cGopDecoder.setDecodedPictureHashSEIEnabled(enabled); }
 
   Void  init();
   Bool  decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay);
-  
   Void  deletePicBuffer();
 
-  Void executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic);
+  
+  Void  executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic);
+  Void  checkNoOutputPriorPics (TComList<TComPic*>* rpcListPic);
+
+  Bool  getNoOutputPriorPicsFlag () { return m_isNoOutputPriorPics; }
+  Void  setNoOutputPriorPicsFlag (Bool val) { m_isNoOutputPriorPics = val; }
+  Void  setFirstSliceInPicture (bool val)  { m_bFirstSliceInPicture = val; }
+  Bool  getFirstSliceInSequence ()         { return m_bFirstSliceInSequence; }
+  Void  setFirstSliceInSequence (bool val) { m_bFirstSliceInSequence = val; }
+#if O0043_BEST_EFFORT_DECODING
+  Void  setForceDecodeBitDepth(UInt bitDepth) { m_forceDecodeBitDepth = bitDepth; }
+#endif
+  Void  setDecodedSEIMessageOutputStream(std::ostream *pOpStream) { m_pDecodedSEIOutputStream = pOpStream; }
+  UInt  getNumberOfChecksumErrorsDetected() const { return m_cGopDecoder.getNumberOfChecksumErrorsDetected(); }
+
+#if SCM_U0181_STORAGE_BOTH_VERSIONS_CURR_DEC_PIC
+  Bool  getTwoVersionsOfCurrDecPicFlag() { return m_pcTwoVersionsOfCurrDecPicFlag; }
+  UInt  getDPBFullness() { return m_DPBFullness; }
+  Void  setDPBFullness(UInt val) { m_DPBFullness = val; }
+  Void  remCurPicBefILFFromDPBDecDPBFullnessByOne(TComList<TComPic*>* pcListPic);
+  Void  markCurrentPictureAfterILFforShortTermRef(TComList<TComPic*>* pcListPic);
+  Void  DPBFullnessIncrementedByOne() { m_DPBFullness++; }
+  Void  DPBFullnessDecrementedByOne() { m_DPBFullness--; }
+  Bool  isCurrPicAsRef() {return m_bIBC;}
+  Void  updateCurrentPictureFlag(TComList<TComPic*>* pcListPic);
+#endif
 
 protected:
-  Void  xGetNewPicBuffer  (TComSlice* pcSlice, TComPic*& rpcPic);
+  Void  xGetNewPicBuffer  (const TComSPS &sps, const TComPPS &pps, TComPic*& rpcPic, const UInt temporalLayer);
   Void  xCreateLostPicture (Int iLostPOC);
 
   Void      xActivateParameterSets();
   Bool      xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay);
-  Void      xDecodeVPS();
-  Void      xDecodeSPS();
-  Void      xDecodePPS();
-  Void      xDecodeSEI( TComInputBitstream* bs, const NalUnitType nalUnitType );
+  Void      xDecodeVPS(const std::vector<UChar> &naluData);
+  Void      xDecodeSPS(const std::vector<UChar> &naluData);
+  Void      xDecodePPS(const std::vector<UChar> &naluData);
+  Void      xUpdatePreviousTid0POC( TComSlice *pSlice ) { if ((pSlice->getTLayer()==0) && (pSlice->isReferenceNalu() && (pSlice->getNalUnitType()!=NAL_UNIT_CODED_SLICE_RASL_R)&& (pSlice->getNalUnitType()!=NAL_UNIT_CODED_SLICE_RADL_R))) { m_prevTid0POC=pSlice->getPOC(); } }
+  Void      xParsePrefixSEImessages();
+  Void      xParsePrefixSEIsForUnknownVCLNal();
 
+#if SCM_U0181_STORAGE_BOTH_VERSIONS_CURR_DEC_PIC
+    Void    xRemovalOfPicturesFromDPBAndDecreaseDPBFullness(const TComSPS &sps);
+    Void    xGetNewPicBufferInDPB  (const TComSPS &sps, const TComPPS &pps, TComPic*& rpcPic, const UInt temporalLayer);
+    Void    xSwapPicPoiterExeptTComPicYuvRefType(TComPic** picA, TComPic** picB);
+#endif
 };// END CLASS DEFINITION TDecTop
 
 
